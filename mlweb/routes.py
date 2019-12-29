@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request
 from mlweb import app, db, bcrypt
-from mlweb.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from mlweb.forms import RegistrationForm, LoginForm, UpdateAccountForm, UploadData
 from mlweb.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -105,3 +105,30 @@ def account():
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
                            image_file=image_file, form=form)
+
+
+def save_data(form_data):
+    _, f_ext = os.path.splitext(form_data.filename)
+    filename = current_user.username + f_ext
+    file_path = os.path.join(app.root_path, 'static/datafiles', filename)
+
+    save(file_path)
+
+    return file_name
+
+@app.route("/upload_data", methods=['GET', 'POST'])
+@login_required
+def upload_data():
+    data = UploadData()
+    if data.validate_on_submit():
+        filename = save_data(data)
+
+        flash('Your account has been updated!', 'success')
+        return redirect(url_for('home'))
+    elif request.method == 'GET':
+    #datafile = url_for('static', filename='datafiles/' + current_user.image_file)       
+
+        return render_template('data.html', title = 'Data', data = data)
+    return redirect(url_for('home'))
+
+
